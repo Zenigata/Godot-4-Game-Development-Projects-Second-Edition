@@ -1,8 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cafu2vvwvrhon"]
+[gd_scene load_steps=4 format=3 uid="uid://bivfvsumdbgpx"]
 
-[ext_resource type="Texture2D" uid="uid://bfi6pjo5kr7cm" path="res://assets/explosion.png" id="1_iovpc"]
+[ext_resource type="Texture2D" uid="uid://2kdpeewq8ulm" path="res://assets/explosion.png" id="1_i346c"]
 
-[sub_resource type="Animation" id="Animation_ha5jw"]
+[sub_resource type="Animation" id="Animation_8sq75"]
 resource_name = "explosion"
 length = 0.64
 step = 0.01
@@ -19,17 +19,17 @@ tracks/0/keys = {
 "values": [0, 63]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_ahui6"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4slvq"]
 _data = {
-"explosion": SubResource("Animation_ha5jw")
+"explosion": SubResource("Animation_8sq75")
 }
 
 [node name="Explosion" type="Sprite2D"]
-texture = ExtResource("1_iovpc")
+texture = ExtResource("1_i346c")
 hframes = 8
 vframes = 8
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-"": SubResource("AnimationLibrary_ahui6")
+"": SubResource("AnimationLibrary_4slvq")
 }

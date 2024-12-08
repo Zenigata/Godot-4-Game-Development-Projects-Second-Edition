@@ -13,14 +13,16 @@ signal dead
 
 enum {INIT, ALIVE, INVULNERABLE, DEAD}
 var state = INIT
+
 var thrust = Vector2.ZERO
 var rotation_dir = 0
 var screensize = Vector2.ZERO
+
 var can_shoot = true
+
 var reset_pos = false
 var lives = 0: set = set_lives
 var shield = 0: set = set_shield
-
 
 func _ready():
 	change_state(INIT)
@@ -34,47 +36,47 @@ func set_shield(value):
 	if shield <= 0:
 		lives -= 1
 		explode()
-			
+
 func set_lives(value):
 	lives = value
-	shield = max_shield
 	lives_changed.emit(lives)
 	if lives <= 0:
 		change_state(DEAD)
 	else:
 		change_state(INVULNERABLE)
+	shield = max_shield
 
 func reset():
 	reset_pos = true
-	$Sprite2d.show()
+	$Sprite2D.show()
 	lives = 3
 	change_state(ALIVE)
 	shield = max_shield
-	
+
 func change_state(new_state):
 	match new_state:
 		INIT:
-			$CollisionShape2d.set_deferred("disabled", true)
-			$Sprite2d.modulate.a = 0.5
+			$CollisionShape2D.set_deferred("disabled", true)
+			$Sprite2D.modulate.a = 0.5
 		ALIVE:
-			$CollisionShape2d.set_deferred("disabled", false)
-			$Sprite2d.modulate.a = 1.0
+			$CollisionShape2D.set_deferred("disabled", false)
+			$Sprite2D.modulate.a = 1.0
 		INVULNERABLE:
-			$CollisionShape2d.set_deferred("disabled", true)
-			$Sprite2d.modulate.a = 0.5
+			$CollisionShape2D.set_deferred("disabled", true)
+			$Sprite2D.modulate.a = 0.5
 			$InvulnerabilityTimer.start()
 		DEAD:
-			$CollisionShape2d.set_deferred("disabled", true)
-			$Sprite2d.hide()
+			$CollisionShape2D.set_deferred("disabled", true)
+			$Sprite2D.hide()
 			$EngineSound.stop()
 			linear_velocity = Vector2.ZERO
 			dead.emit()
 	state = new_state
-	
+
 func _process(delta):
 	get_input()
 	shield += shield_regen * delta
-	
+
 func get_input():
 	thrust = Vector2.ZERO
 	$Exhaust.emitting = false
@@ -90,7 +92,7 @@ func get_input():
 	rotation_dir = Input.get_axis("rotate_left", "rotate_right")
 	if Input.is_action_pressed("shoot") and can_shoot:
 		shoot()
-		
+
 func shoot():
 	if state == INVULNERABLE:
 		return
@@ -100,11 +102,11 @@ func shoot():
 	get_tree().root.add_child(b)
 	b.start($Muzzle.global_transform)
 	$LaserSound.play()
-	
+
 func _physics_process(delta):
 	constant_force = thrust
 	constant_torque = rotation_dir * spin_power
-	
+
 func _integrate_forces(physics_state):
 	if reset_pos:
 		physics_state.transform.origin = screensize / 2
@@ -114,23 +116,21 @@ func _integrate_forces(physics_state):
 	xform.origin.y = wrapf(xform.origin.y, 0, screensize.y)
 	physics_state.transform = xform
 
-func _on_gun_cooldown_timeout():
+func _on_gun_cooldown_timeout() -> void:
 	can_shoot = true
 
-
-func _on_invulnerability_timer_timeout():
+func _on_invulnerability_timer_timeout() -> void:
 	change_state(ALIVE)
 
 func explode():
 	$ExplosionSound.play()
 	$Explosion.show()
 	$Explosion/AnimationPlayer.play("explosion")
-#	lives -= 1
+	#lives -= 1
 	await $Explosion/AnimationPlayer.animation_finished
 	$Explosion.hide()
 
-func _on_player_body_entered(body):
+func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("rocks"):
 		shield -= body.size * 25
 		body.explode()
-		

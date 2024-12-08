@@ -29,7 +29,7 @@ func shoot():
 	var b = bullet_scene.instantiate()
 	get_tree().root.add_child(b)
 	b.start(global_position, dir)
-	$LaserSound.play()
+	$ShootSound.play()
 
 func shoot_pulse(n, delay):
 	for i in n:
@@ -53,12 +53,11 @@ func explode():
 	await $Explosion/AnimationPlayer.animation_finished
 	queue_free()
 
-func _on_gun_cooldown_timeout():
-#	shoot()
+func _on_gun_cooldown_timeout() -> void:
+	#shoot()
 	shoot_pulse(3, 0.15)
 
-
-func _on_body_entered(body):
+func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("rocks"):
 		return
 	explode()

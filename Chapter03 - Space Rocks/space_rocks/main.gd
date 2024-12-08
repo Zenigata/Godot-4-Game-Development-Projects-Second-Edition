@@ -1,7 +1,7 @@
 extends Node
 
 @export var rock_scene : PackedScene
-@export var enemy_scene: PackedScene
+@export var enemy_scene : PackedScene
 
 var screensize = Vector2.ZERO
 var level = 0
@@ -11,22 +11,33 @@ var playing = false
 func _ready():
 	randomize()
 	screensize = get_viewport().get_visible_rect().size
-	for i in 3:
-		spawn_rock(3)
+	#for i in 3:
+	#	spawn_rock(3)
+
+func _process(delta):
+	if !playing:
+		return
+	if get_tree().get_nodes_in_group("rocks").size() == 0:
+		new_level()
+
+func game_over():
+	playing = false
+	$HUD.game_over()
+	$Music.stop()
 
 func _input(event):
 	if event.is_action_pressed("pause"):
 		if not playing:
 			return
 		get_tree().paused = not get_tree().paused
+		var message = $HUD/VBoxContainer/Message
 		if get_tree().paused:
-			$HUD/Message.text = "Paused"
-			$HUD/Message.show()
+			message.text = "Pause"
+			message.show()
 		else:
-			$HUD/Message.text = ""
-			$HUD/Message.hide()
-	
-	
+			message.text = ""
+			message.hide()
+
 func spawn_rock(size, pos=null, vel=null):
 	if pos == null:
 		$RockPath/RockSpawn.progress = randi()
@@ -38,7 +49,7 @@ func spawn_rock(size, pos=null, vel=null):
 	r.start(pos, vel, size)
 	call_deferred("add_child", r)
 	r.exploded.connect(self._on_rock_exploded)
-	
+
 func _on_rock_exploded(size, radius, pos, vel):
 	$ExplosionSound.play()
 	score += 10 * size
@@ -57,35 +68,21 @@ func new_game():
 	score = 0
 	$HUD.update_score(score)
 	$Player.reset()
-	$HUD.show_message("Get Ready!")
+	$HUD.show_message("C'est parti !")
 	await $HUD/Timer.timeout
 	playing = true
 	$Music.play()
-	
+
 func new_level():
 	$LevelupSound.play()
 	$EnemyTimer.start(randf_range(5, 10))
 	level += 1
-	$HUD.show_message("Wave %s" % level)
+	$HUD.show_message("Vague %s" % level)
 	for i in level:
 		spawn_rock(3)
 
-func _process(delta):
-	if !playing:
-		return
-	if get_tree().get_nodes_in_group("rocks").size() == 0:
-		new_level()
-
-func game_over():
-	playing = false
-	$HUD.game_over()
-	$Music.stop()
-
-
-func _on_enemy_timer_timeout():
+func _on_enemy_timer_timeout() -> void:
 	var e = enemy_scene.instantiate()
 	add_child(e)
 	e.target = $Player
 	$EnemyTimer.start(randf_range(20, 40))
-	
-	
